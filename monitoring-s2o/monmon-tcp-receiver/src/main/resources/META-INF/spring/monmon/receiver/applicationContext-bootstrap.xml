@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/util
+         http://www.springframework.org/schema/util/spring-util.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/jdbc
+         http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+          http://www.springframework.org/schema/jee 
+	      http://www.springframework.org/schema/jee/spring-jee.xsd
+	      http://www.springframework.org/schema/task
+		http://www.springframework.org/schema/task/spring-task.xsd">
+
+	<context:annotation-config />
+
+	<task:annotation-driven executor="defaultAssynExecutor"/>
+	<task:executor id="defaultAssynExecutor" pool-size="5"/>
+
+	<!-- Configure all properties files here, wildcards like *.properties are also allowed -->
+	<context:property-placeholder location="classpath:/META-INF/spring/monmon/monmon-*.properties" />
+
+	<bean id="tcpServer" class="es.s2o.monmon.tcp.server.TCPServer" init-method="startServer" destroy-method="stopServer"/>
+
+	<bean id="measurePipelineFactory" class="es.s2o.monmon.tcp.commun.MessagePipelineFactory">
+		<constructor-arg ref="measureServerHandler" />
+		<constructor-arg value="${tcp.frameSize}" />
+	</bean>
+
+	<bean id="measureServerHandler" class="es.s2o.monmon.tcp.server.MeasureServerHandler">
+		<constructor-arg ref="defaultChannelGroup" />
+	</bean>
+
+	<bean id="defaultChannelGroup" class="org.jboss.netty.channel.group.DefaultChannelGroup">
+		<constructor-arg value="MONITOR"></constructor-arg>
+	</bean>
+	
+	<bean id="measureMessageAggregator" class="es.s2o.monmon.tcp.server.MeasureAggregatorService"/>
+
+	<bean id="nioServerSocketChannelFactory" class="org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory"/>
+	
+	<bean id="measureDAO" class="es.s2o.monmon.repository.dao.MeasureDAO"/> 
+	
+	<jee:jndi-lookup id="dataSource" jndi-name="/jdbc/monmonDS"/>
+	
+</beans>
+
+<!-- 	<import resource="classpath:/META-INF/spring/monmon/receiver/applicationContext-services.xml" /> -->
+<!-- 	<import resource="classpath:/META-INF/spring/monmon/receiver/applicationContext-netty.xml" /> -->
+
+
+<!-- <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"> -->
+<!-- <property name="driverClassName" value="org.hsqldb.jdbcDriver" />  -->
+<!-- <property name="url" value="jdbc:hsqldb:hsql://localhost/springexamples/se" /> -->
+<!-- <property name="username" value="joe" /> -->
+<!-- <property name="password" value="" /> -->
+<!-- <property name="initialSize" value="5" /> -->
+<!-- <property name="maxActive" value="10" /> -->
+<!-- </bean> -->
+
+		<!-- <bean id="meassureRepository" class="es.s2o.monmon.receicer.repository.internal.MeassureRepositoryImpl"> -->
+		<!-- <constructor-arg ref="dataSource"/> -->
+		<!-- </bean> -->
+
+		<!-- System.out.println & System.err.println handling through SLF4J <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean"> 
+			<property name="targetClass" value="uk.org.lidalia.sysoutslf4j.context.SysOutOverSLF4J" /> <property name="staticMethod" 
+			value="uk.org.lidalia.sysoutslf4j.context.SysOutOverSLF4J.sendSystemOutAndErrToSLF4J" /> <property name="arguments"> <list> 
+			<util:constant static-field="uk.org.lidalia.sysoutslf4j.context.LogLevel.DEBUG" /> <util:constant static-field="uk.org.lidalia.sysoutslf4j.context.LogLevel.ERROR" 
+			/> </list> </property> </bean> -->
+
+		<!-- Enable handling of java.util.logging through SLF4J <bean id="slf4JBridgeHandler" class="org.slf4j.bridge.SLF4JBridgeHandler" 
+			init-method="removeHandlersForRootLogger" /> <bean class="org.slf4j.bridge.SLF4JBridgeHandler" init-method="install" depends-on="slf4JBridgeHandler" 
+			/> -->
+		<!-- Enable Spring JMX 
+		<context:mbean-server />-->
+

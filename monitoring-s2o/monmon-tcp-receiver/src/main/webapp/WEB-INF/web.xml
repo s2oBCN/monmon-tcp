@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         version="2.5"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+           http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+	<display-name>ABSIS Monitoring Centralizado - TCP Receiver</display-name>
+ 	<description>Aplicacin que recibe e inserta en BDD todos los mensajes de monitoring.
+ 			Expone el servicio TCP Alive para que desde la VIPA sepa si el servidor va OK 
+ 			o si debe enviar los mensajes a otro servidor.
+ 	</description>
+ 	
+ 	<!-- Creates the Spring Container shared by all Servlets and Filters -->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:/META-INF/spring/monmon/receiver/applicationContext-bootstrap.xml</param-value>
+	</context-param>
+
+	
+</web-app>
