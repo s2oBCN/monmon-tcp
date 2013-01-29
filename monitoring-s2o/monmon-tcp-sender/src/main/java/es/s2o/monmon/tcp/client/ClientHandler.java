@@ -35,11 +35,12 @@ public class ClientHandler extends SimpleChannelUpstreamHandler {
 	 * , org.jboss.netty.channel.ChannelStateEvent)
 	 */
 	@Override
-	public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent chanelEvent) throws Exception {
+	public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent channelEvent)
+			throws Exception {
 		LOGGER.debug("Channel connected OK");
 
 		// Add channel to group so later we will close the group
-		channelGroup.add(chanelEvent.getChannel());
+		channelGroup.add(channelEvent.getChannel());
 	}
 
 	/**

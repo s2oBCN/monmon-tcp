@@ -15,62 +15,41 @@
  */
 package es.s2o.monmon.tcp.commun;
 
-import java.nio.charset.Charset;
-
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
+import org.jboss.netty.util.CharsetUtil;
 
 import es.s2o.monmon.tcp.identifiers.Infraestructure;
-import es.s2o.monmon.tcp.identifiers.InputChannel;
-import es.s2o.monmon.tcp.identifiers.Type;
-import es.s2o.monmon.tcp.identifiers.Version;
+import es.s2o.monmon.tcp.identifiers.MsgType;
+import es.s2o.monmon.tcp.identifiers.MsgVersion;
 import es.s2o.monmon.tcp.to.MeasureMessage;
 
 /**
- * Encodes the requested {@link String} into a {@link ChannelBuffer}. A typical setup for a text-based line protocol in
- * a TCP/IP socket would be:
- * 
- * <pre>
- * {@link ChannelPipeline} pipeline = ...;
- * 
- * // Decoders
- * pipeline.addLast("frameDecoder", new {@link DelimiterBasedFrameDecoder}({@link Delimiters#lineDelimiter()}));
- * pipeline.addLast("stringDecoder", new {@link MessageDecoder}(CharsetUtil.UTF_8));
- * 
- * // Encoder
- * pipeline.addLast("stringEncoder", new {@link MessageEncoder}(CharsetUtil.UTF_8));
- * </pre>
- * 
- * and then you can use a {@link String} instead of a {@link ChannelBuffer} as a message:
- * 
- * <pre>
- * void messageReceived({@link ChannelHandlerContext} ctx, {@link MessageEvent} e) {
- *     String msg = (String) e.getMessage();
- *     ch.write("Did you say '" + msg + "'?\n");
- * }
- * </pre>
- * 
- * @apiviz.landmark
+ * Encodes the requested {@link MeasureMessage} into a {@link ChannelBuffer}. <br/>
+ * It's a combination of fixed length and fieldDelimiter
  */
 @ChannelHandler.Sharable
 public class MessageEncoder extends OneToOneEncoder {
 
-	private static final Charset charset = Charset.forName("UTF-8");
-
 	private static final String fieldDelimiter = "#";
 
+	/**
+	 * @return
+	 */
 	public static MessageEncoder getInstance() {
 		return InstanceHolder.INSTANCE;
 	}
 
+	/**
+	 * 
+	 * 
+	 * @see org.jboss.netty.handler.codec.oneone.OneToOneEncoder#encode(org.jboss.netty.channel.ChannelHandlerContext,
+	 * org.jboss.netty.channel.Channel, java.lang.Object)
+	 */
 	@Override
 	protected Object encode(final ChannelHandlerContext ctx, final Channel channel, final Object msg) throws Exception {
 		Object answer = msg;
@@ -81,12 +60,19 @@ public class MessageEncoder extends OneToOneEncoder {
 		return answer;
 	}
 
-	public static ChannelBuffer encodeMessage(final MeasureMessage message) throws IllegalArgumentException {
-		if (message.getVersion() == null || message.getVersion() == Version.UNKNOWN) {
+	/**
+	 * Verify and encode message. Not nullabled values: version, MsgType, Infrastructure, Channel
+	 * 
+	 * @param message
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	private static ChannelBuffer encodeMessage(final MeasureMessage message) throws IllegalArgumentException {
+		if (message.getMsgVersion() == null || message.getMsgVersion() == MsgVersion.UNKNOWN) {
 			throw new IllegalArgumentException("Message version cannot be null or UNKNOWN");
 		}
 
-		if (message.getMsgType() == null || message.getMsgType() == Type.UNKNOWN) {
+		if (message.getMsgType() == null || message.getMsgType() == MsgType.UNKNOWN) {
 			throw new IllegalArgumentException("Message type cannot be null or UNKNOWN");
 		}
 
@@ -94,14 +80,15 @@ public class MessageEncoder extends OneToOneEncoder {
 			throw new IllegalArgumentException("Message Infraestructure cannot be null or empty");
 		}
 
-		if (message.getChannel() == null || message.getChannel() == InputChannel.UNKNOWN) {
+		if (message.getInputChannel() == null || message.getInputChannel().length() < 3) {
 			throw new IllegalArgumentException("Message channel cannot be null or empty");
 		}
 
-		final String payload = message.getChannel().getValue() + fieldDelimiter + message.getSubchannel()
-				+ fieldDelimiter + message.getLayer() + fieldDelimiter + message.getManagedId() + fieldDelimiter
-				+ message.getTimestamp() + fieldDelimiter + message.getValue() + fieldDelimiter + message.getInvoker()
-				+ fieldDelimiter + message.getInvokerVersion() + fieldDelimiter + message.getTarget() + fieldDelimiter
+		final String payload = message.getInputChannel() + fieldDelimiter + message.getSubchannel() + fieldDelimiter
+				+ message.getSubsubchannel() + fieldDelimiter + message.getLayer() + fieldDelimiter
+				+ message.getManagedId() + fieldDelimiter + message.getTimestamp() + fieldDelimiter
+				+ message.getValue() + fieldDelimiter + message.getInvoker() + fieldDelimiter
+				+ message.getInvokerVersion() + fieldDelimiter + message.getTarget() + fieldDelimiter
 				+ message.getTargetVersion() + fieldDelimiter + message.getRequestProtocol() + fieldDelimiter
 				+ message.getRetval();
 		final int payloadLength = payload.length();
@@ -110,11 +97,11 @@ public class MessageEncoder extends OneToOneEncoder {
 		final int size = 7 + payloadLength;
 
 		final ChannelBuffer buffer = ChannelBuffers.buffer(size);
-		buffer.writeByte(message.getVersion().getValue());
+		buffer.writeByte(message.getMsgVersion().getValue());
 		buffer.writeByte(message.getMsgType().getValue());
 		buffer.writeByte(message.getInfrastructure().getValue());
 		buffer.writeInt(payloadLength);
-		buffer.writeBytes(payload.getBytes(charset));
+		buffer.writeBytes(payload.getBytes(CharsetUtil.UTF_8));
 		return buffer;
 	}
 

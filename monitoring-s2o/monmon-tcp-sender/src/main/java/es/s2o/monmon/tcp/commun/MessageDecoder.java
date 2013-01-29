@@ -15,77 +15,50 @@
  */
 package es.s2o.monmon.tcp.commun;
 
-import java.nio.charset.Charset;
-
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
-import org.jboss.netty.handler.codec.frame.FrameDecoder;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
+import org.jboss.netty.util.CharsetUtil;
 
 import es.s2o.monmon.tcp.identifiers.Infraestructure;
-import es.s2o.monmon.tcp.identifiers.InputChannel;
-import es.s2o.monmon.tcp.identifiers.Type;
-import es.s2o.monmon.tcp.identifiers.Version;
+import es.s2o.monmon.tcp.identifiers.MsgType;
+import es.s2o.monmon.tcp.identifiers.MsgVersion;
 import es.s2o.monmon.tcp.to.MeasureMessage;
 
 /**
- * Decodes a received {@link ChannelBuffer} into a {@link String}. Please note that this decoder must be used with a
- * proper {@link FrameDecoder} such as {@link DelimiterBasedFrameDecoder} if you are using a stream-based transport such
- * as TCP/IP. A typical setup for a text-based line protocol in a TCP/IP socket would be:
+ * Decodes a received {@link ChannelBuffer} into a {@link MeasureMessage}. <br/>
+ * It's a combination of fixed length and fieldDelimiter
  * 
- * <pre>
- * {@link ChannelPipeline} pipeline = ...;
- * 
- * // Decoders
- * pipeline.addLast("frameDecoder", new {@link DelimiterBasedFrameDecoder}(80, {@link Delimiters#lineDelimiter()}));
- * pipeline.addLast("stringDecoder", new {@link MessageDecoder}(CharsetUtil.UTF_8));
- * 
- * // Encoder
- * pipeline.addLast("stringEncoder", new {@link MessageEncoder}(CharsetUtil.UTF_8));
- * </pre>
- * 
- * and then you can use a {@link String} instead of a {@link ChannelBuffer} as a message:
- * 
- * <pre>
- * void messageReceived({@link ChannelHandlerContext} ctx, {@link MessageEvent} e) {
- *     String msg = (String) e.getMessage();
- *     ch.write("Did you say '" + msg + "'?\n");
- * }
- * </pre>
- * 
- * @apiviz.landmark
  */
-@ChannelHandler.Sharable
 public class MessageDecoder extends ReplayingDecoder<MessageDecoder.DecodingState> {
-
-	private final Charset charset = Charset.forName("UTF-8");
 
 	private MeasureMessage message;
 
 	private static final String fieldDelimiter = "#";
 
-	// constructors ---------------------------------------------------------------------------------------------------
-
+	/**
+	 * Initialize new message
+	 */
 	public MessageDecoder() {
 		reset();
 	}
 
+	/**
+	 * Loop until the end of the message
+	 * 
+	 * @see org.jboss.netty.handler.codec.replay.ReplayingDecoder#decode(org.jboss.netty.channel.ChannelHandlerContext,
+	 * org.jboss.netty.channel.Channel, org.jboss.netty.buffer.ChannelBuffer, java.lang.Enum)
+	 */
 	@Override
 	protected Object decode(final ChannelHandlerContext ctx, final Channel channel, final ChannelBuffer buffer,
 			final DecodingState state) throws Exception {
-		// notice the switch fall-through
 		switch (state) {
 		case VERSION:
-			message.setVersion(Version.fromByte(buffer.readByte()));
+			message.setMsgVersion(MsgVersion.fromByte(buffer.readByte()));
 			checkpoint(DecodingState.TYPE);
 		case TYPE:
-			message.setMsgType(Type.fromByte(buffer.readByte()));
+			message.setMsgType(MsgType.fromByte(buffer.readByte()));
 			checkpoint(DecodingState.INFRAESTRUCTURE);
 		case INFRAESTRUCTURE:
 			message.setInfrastructure(Infraestructure.fromByte(buffer.readByte()));
@@ -98,8 +71,8 @@ public class MessageDecoder extends ReplayingDecoder<MessageDecoder.DecodingStat
 			// pre-allocate content buffer
 			final byte[] content = new byte[size];
 			buffer.readBytes(content);
-			final String payload = new String(content, charset);
-			convertFromTCP(payload);
+			final String payload = new String(content, CharsetUtil.UTF_8);
+			decodeFromTCPStringDelimited(payload);
 			try {
 				// return the instance var and reset this decoder state after doing so.
 				return message;
@@ -113,40 +86,45 @@ public class MessageDecoder extends ReplayingDecoder<MessageDecoder.DecodingStat
 	}
 
 	/**
-	 * Convert from string (from TCP) to MeasureMessage Object
+	 * Decode from string to MeasureMessage Object
 	 * 
 	 * @param message
 	 * @return
 	 */
-	private void convertFromTCP(final String payload) {
+	private void decodeFromTCPStringDelimited(final String payload) {
 		final String[] decoded = payload.split(fieldDelimiter);
 
-		message.setChannel(InputChannel.fromString(decoded[0]));
+		message.setInputChannel(decoded[0]);
 		message.setSubchannel(decoded[1]);
-		message.setLayer(decoded[2]);
-		message.setManagedId(decoded[3]);
-		final int timestamp = Integer.valueOf(decoded[4]);
+		message.setSubsubchannel(decoded[2]);
+		message.setLayer(decoded[3]);
+		message.setManagedId(decoded[4]);
+		final int timestamp = Integer.valueOf(decoded[5]);
 		message.setTimestamp(timestamp);
-		final short value = Short.valueOf(decoded[5]);
+		final short value = Short.valueOf(decoded[6]);
 		message.setValue(value);
-		message.setInvoker(decoded[6]);
-		message.setInvokerVersion(decoded[7]);
-		message.setTarget(decoded[8]);
-		message.setTargetVersion(decoded[9]);
-		message.setRequestProtocol(decoded[10]);
-		message.setRetval(decoded[11]);
+		message.setInvoker(decoded[7]);
+		message.setInvokerVersion(decoded[8]);
+		message.setTarget(decoded[9]);
+		message.setTargetVersion(decoded[10]);
+		message.setRequestProtocol(decoded[11]);
+		message.setRetval(decoded[12]);
+
 	}
 
+	/**
+	 * New message
+	 */
 	private void reset() {
 		checkpoint(DecodingState.VERSION);
 		message = new MeasureMessage();
 	}
 
-	// private classes ------------------------------------------------------------------------------------------------
-
+	/**
+	 * @author s2o
+	 * 
+	 */
 	public enum DecodingState {
-
-		// constants --------------------------------------------------------------------------------------------------
 		VERSION, TYPE, INFRAESTRUCTURE, PAYLOAD_LENGTH,
 	}
 }

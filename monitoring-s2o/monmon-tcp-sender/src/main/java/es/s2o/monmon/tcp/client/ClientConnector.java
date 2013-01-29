@@ -29,14 +29,15 @@ public class ClientConnector extends ClientBootstrap {
 	/**
 	 * Properties loaded from filesystem
 	 */
-	private final TCPProperties tcpProperties = HelperProperties.getTCPProperties();
+	private final TCPProperties tcpProperties;
 
 	/**
 	 * Constructor that creates a new {@link NioClientSocketChannelFactory} which uses
 	 * {@link Executors#newCachedThreadPool()} for the worker and boss executors.
 	 */
-	public ClientConnector() {
+	public ClientConnector(final TCPProperties tcpProperties) {
 		super(new NioClientSocketChannelFactory());
+		this.tcpProperties = tcpProperties;
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class ClientConnector extends ClientBootstrap {
 
 		final ClientHandler handler;
 		handler = new ClientHandler(channelGroup);
-		final ChannelPipelineFactory pipelineFactory = new MessagePipelineFactory(handler, tcpProperties.getFrameSize());
+		final ChannelPipelineFactory pipelineFactory = new MessagePipelineFactory(handler);
 		setPipelineFactory(pipelineFactory);
 
 		setOption("reuseAddress", true);

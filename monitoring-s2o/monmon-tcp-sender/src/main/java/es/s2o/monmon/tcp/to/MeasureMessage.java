@@ -1,9 +1,8 @@
 package es.s2o.monmon.tcp.to;
 
 import es.s2o.monmon.tcp.identifiers.Infraestructure;
-import es.s2o.monmon.tcp.identifiers.InputChannel;
-import es.s2o.monmon.tcp.identifiers.Type;
-import es.s2o.monmon.tcp.identifiers.Version;
+import es.s2o.monmon.tcp.identifiers.MsgType;
+import es.s2o.monmon.tcp.identifiers.MsgVersion;
 
 /**
  * Measure message with all the information of the measure
@@ -13,13 +12,13 @@ import es.s2o.monmon.tcp.identifiers.Version;
  */
 public class MeasureMessage {
 
-	private Version version;
+	private MsgVersion mesgVersion;
 
-	private Type msgType;
+	private MsgType msgType;
 
 	private Infraestructure infrastructure;
 
-	private InputChannel channel;
+	private String inputChannel = "000";
 
 	private String layer = "";
 
@@ -43,19 +42,21 @@ public class MeasureMessage {
 
 	private String subchannel = "000";
 
-	public Version getVersion() {
-		return version;
+	private String subsubchannel = "000";
+
+	public MsgVersion getMsgVersion() {
+		return mesgVersion;
 	}
 
-	public void setVersion(final Version version) {
-		this.version = version;
+	public void setMsgVersion(final MsgVersion version) {
+		mesgVersion = version;
 	}
 
-	public Type getMsgType() {
+	public MsgType getMsgType() {
 		return msgType;
 	}
 
-	public void setMsgType(final Type msgType) {
+	public void setMsgType(final MsgType msgType) {
 		this.msgType = msgType;
 	}
 
@@ -67,12 +68,12 @@ public class MeasureMessage {
 		this.infrastructure = infrastructure;
 	}
 
-	public InputChannel getChannel() {
-		return channel;
+	public String getInputChannel() {
+		return inputChannel;
 	}
 
-	public void setChannel(final InputChannel channel) {
-		this.channel = channel;
+	public void setInputChannel(final String channel) {
+		inputChannel = channel;
 	}
 
 	public String getSubchannel() {
@@ -163,9 +164,19 @@ public class MeasureMessage {
 		this.retval = retval;
 	}
 
+	public String getSubsubchannel() {
+		return subsubchannel;
+	}
+
+	public void setSubsubchannel(final String subsubchannel) {
+		this.subsubchannel = subsubchannel;
+	}
+
 	@Override
 	public String toString() {
-		return version.toString() + msgType + infrastructure + channel + subchannel + layer + managedId + timestamp
-				+ value + invoker + invokerVersion + target + targetVersion + requestProtocol + retval;
+		return mesgVersion.toString() + msgType + infrastructure + inputChannel + subchannel + "subsubchannel:"
+				+ subsubchannel + layer + managedId + timestamp + value + invoker + invokerVersion + target
+				+ targetVersion + requestProtocol + retval;
 	}
+
 }

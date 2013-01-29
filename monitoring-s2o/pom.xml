@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<groupId>es.s2o.monmon</groupId>
 	<artifactId>monmon-parent</artifactId>
 	<packaging>pom</packaging>
@@ -11,70 +11,138 @@
 
 	<!-- Shared version number properties -->
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sender.java.version>1.5</sender.java.version>
 		<java.version>1.6</java.version>
 
 		<!-- Core for IOP, WEB... -->
-		<org.springframework.version>3.1.2.RELEASE</org.springframework.version>	
-		
+		<org.springframework.version>3.1.2.RELEASE</org.springframework.version>
+		<cglib.version>2.2.2</cglib.version>
+
 		<!-- NIO -->
-		<netty.version>3.6.2.Final</netty.version>	
-		
+		<netty.version>3.6.2.Final</netty.version>
+
 		<!-- logging -->
 		<logback.version>1.0.9</logback.version>
 		<slf4j.version>1.7.2</slf4j.version>
-		<log4j.version>1.2.14</log4j.version>	
-<!-- 		<commons.logging.version>1.1.1</commons.logging.version> -->
-		
+
 		<!-- Web -->
 		<thymeleaf.version>2.0.14</thymeleaf.version>
 		<javax.servlet-api.version>3.0.1</javax.servlet-api.version>
 		<javax.jstl-taglibs.version>1.1.2</javax.jstl-taglibs.version>
-		
+
 		<!-- Testing -->
-		<junit.version>4.11</junit.version>		
-		<mockito.version>1.9.5</mockito.version>	
-		
+		<junit.version>4.11</junit.version>
+		<mockito.version>1.9.5</mockito.version>
 
-	</properties>	
 
-<dependencyManagement>
-  <dependencies>
+	</properties>
 
-   <!-- Logging with SLF4J & LogBack -->
-  <dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>jcl-over-slf4j</artifactId>
-    <version>${slf4j.version}</version>
-  </dependency>
-  <dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-api</artifactId>
-    <version>${slf4j.version}</version>
-  </dependency>
-  <dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>jul-to-slf4j</artifactId>
-    <version>${slf4j.version}</version>
-  </dependency>
-  <dependency>
-    <groupId>ch.qos.logback</groupId>
-    <artifactId>logback-classic</artifactId>
-    <version>${logback.version}</version>
-  </dependency>
-  <dependency>
-    <groupId>ch.qos.logback</groupId>
-    <artifactId>logback-core</artifactId>
-    <version>${logback.version}</version>
-  </dependency>
-  <dependency>
-    <groupId>ch.qos.logback</groupId>
-    <artifactId>logback-access</artifactId>
-    <version>${logback.version}</version>
-  </dependency>
+	<dependencyManagement>
+		<dependencies>
 
-  </dependencies>
-</dependencyManagement>
+			<!-- Netty is a NIO client server framework -->
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty</artifactId>
+				<version>${netty.version}</version>
+			</dependency>
+
+
+			<!-- Logging with SLF4J & LogBack -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>jcl-over-slf4j</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+
+
+			<!-- Application Context (depends on spring-core, spring-expression, spring-aop, spring-beans) This is the central artifact 
+				for Spring's Dependency Injection Container and is generally always defined -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-expression</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-beans</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-asm</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-jdbc</artifactId>
+				<version>${org.springframework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-web</artifactId>
+				<version>${org.springframework.version}</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>cglib</groupId>
+				<artifactId>cglib</artifactId>
+				<version>${cglib.version}</version>
+			</dependency>
+
+
+			<!-- Testing> -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+				<version>${mockito.version}</version>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- Netty is a NIO client server framework -->
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty</artifactId>
+		</dependency>
+
+		<!-- Application test depends on junit and mockito -->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 	<modules>
 		<module>monmon-web</module>
 		<module>monmon-tcp-receiver</module>

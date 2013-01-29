@@ -6,14 +6,13 @@ package es.s2o.monmon.tcp.identifiers;
  * @author s2o
  * 
  */
-public enum Infraestructure {
-
-	UNKNOWN((byte) 48), ABSIS((byte) 49);
+public enum MsgVersion {
+	UNKNOWN((byte) 48), VERSION1((byte) 49), VERSION2((byte) 50);
 
 	private final byte value;
 
-	private Infraestructure(final byte Infraestructure) {
-		value = Infraestructure;
+	private MsgVersion(final byte version) {
+		value = version;
 	}
 
 	/**
@@ -27,9 +26,9 @@ public enum Infraestructure {
 	 * @param value
 	 * @return
 	 */
-	public static Infraestructure fromByte(final byte value) {
-		for (final Infraestructure code : values()) {
-			if (code.value == value) {
+	public static MsgVersion fromByte(final byte b) {
+		for (final MsgVersion code : values()) {
+			if (code.value == b) {
 				return code;
 			}
 		}

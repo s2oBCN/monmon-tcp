@@ -8,7 +8,7 @@ import org.jboss.netty.logging.InternalLogger;
 import org.jboss.netty.logging.Log4JLoggerFactory;
 
 /**
- * This class is used for get the pipeline for the channel
+ * This class is used to get the pipeline for the channel
  * 
  * @author s2o
  * 
@@ -19,19 +19,15 @@ public class MessagePipelineFactory implements ChannelPipelineFactory {
 
 	private transient final ChannelHandler handler;
 
-	private transient final int frameSize;
-
 	/**
 	 * @param handler
-	 * @param frameSize
 	 */
-	public MessagePipelineFactory(final ChannelHandler handler, final int frameSize) {
+	public MessagePipelineFactory(final ChannelHandler handler) {
 		this.handler = handler;
-		this.frameSize = frameSize;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Set encoder, decoder and handler
 	 * 
 	 * @see org.jboss.netty.channel.ChannelPipelineFactory#getPipeline()
 	 */
@@ -39,9 +35,6 @@ public class MessagePipelineFactory implements ChannelPipelineFactory {
 		LOGGER.debug("getting pipeline from factory");
 
 		final ChannelPipeline pipeline = Channels.pipeline();
-		// pipeline.addLast("framer", new LineBasedFrameDecoder(frameSize));
-		// pipeline.addLast("decoder", new StringDecoder());
-		// pipeline.addLast("encoder", new StringEncoder());
 		pipeline.addLast("encoder", MessageEncoder.getInstance());
 		pipeline.addLast("decoder", new MessageDecoder());
 		pipeline.addLast("handler", handler);

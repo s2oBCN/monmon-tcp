@@ -8,7 +8,7 @@
                
 	<Resource name="jdbc/monmonDS" auth="Container" type="javax.sql.DataSource"
                maxActive="50" maxIdle="30" maxWait="10000"
-               username="monmon" password="monmon" 
+               username="monmondb" password="monmondb" 
 			driverClassName="oracle.jdbc.driver.OracleDriver"
-               url="jdbc:oracle:thin:@5.1.2.163:1521/xe"/>              
+               url="jdbc:oracle:thin:@localhost:1521/xe"/>              
 </Context>

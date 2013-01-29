@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<bean id="tcpServer" class="es.s2o.monmon.tcp.server.TCPServer" init-method="startServer" destroy-method="stopServer"/>
+
+	<bean id="measurePipelineFactory" class="es.s2o.monmon.tcp.commun.MessagePipelineFactory">
+		<constructor-arg ref="measureServerHandler" />
+	</bean>
+
+	<bean id="measureServerHandler" class="es.s2o.monmon.tcp.server.MeasureServerHandler">
+		<constructor-arg ref="defaultChannelGroup" />
+	</bean>
+
+	<bean id="defaultChannelGroup" class="org.jboss.netty.channel.group.DefaultChannelGroup">
+		<constructor-arg value="MONITOR"></constructor-arg>
+	</bean>
+	
+	<bean id="nioServerSocketChannelFactory" class="org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory"/>
+	
+</beans>

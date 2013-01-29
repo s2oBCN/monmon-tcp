@@ -40,25 +40,25 @@ public class MeasureDAO {
 		try {
 			final Connection connection = dataSource.getConnection();
 			connection.setAutoCommit(false);
-			pstmt = connection.prepareStatement("INSERT INTO MEASURE_MESSAGE VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+			pstmt = connection.prepareStatement("INSERT INTO MEASURE_MESSAGE VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
 			for (final MeasureMessage measure : list) {
 
-				pstmt.setString(1, measure.getVersion().toString());
+				pstmt.setString(1, measure.getMsgVersion().toString());
 				pstmt.setString(2, measure.getInfrastructure().toString());
-				pstmt.setString(3, measure.getChannel().getValue());
-				pstmt.setString(4, measure.getLayer());
-				pstmt.setString(5, measure.getManagedId());
-				pstmt.setInt(6, measure.getTimestamp());
-				pstmt.setShort(7, measure.getValue());
-				pstmt.setString(8, measure.getInvoker());
-				pstmt.setString(9, measure.getInvokerVersion());
-				pstmt.setString(10, measure.getTarget());
-				pstmt.setString(11, measure.getTargetVersion());
-				pstmt.setString(12, measure.getRequestProtocol());
-				pstmt.setString(13, measure.getRetval());
-				pstmt.setString(14, measure.getSubchannel());
-
+				pstmt.setString(3, measure.getInputChannel());
+				pstmt.setString(4, measure.getSubchannel());
+				pstmt.setString(5, measure.getSubsubchannel());
+				pstmt.setString(6, measure.getLayer());
+				pstmt.setString(7, measure.getManagedId());
+				pstmt.setInt(8, measure.getTimestamp());
+				pstmt.setShort(9, measure.getValue());
+				pstmt.setString(10, measure.getInvoker());
+				pstmt.setString(11, measure.getInvokerVersion());
+				pstmt.setString(12, measure.getRetval());
+				pstmt.setString(13, measure.getTarget());
+				pstmt.setString(14, measure.getTargetVersion());
+				pstmt.setString(15, measure.getRequestProtocol());
 				pstmt.addBatch();
 			}
 
